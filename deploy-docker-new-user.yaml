@@ -1,4 +1,19 @@
 ---
+- name: Wait for ssh connection
+  hosts: all
+  gather_facts: True
+  tasks:
+    - name: Ensure ssh port open
+      wait_for:
+      port: 22
+      delay: 10
+      timout: 100
+      search_regex: OpenSSH
+      host: "{{ (ansible_ssh_host|default(ansible_host))|default(inventory_hostname)  }}"
+  vars:
+    ansible_connection: local
+    ansible_python_interpreter: /usr/bin/python
+
 - name: Install python3, docker, docker-compose
   hosts: all
   become: yes
@@ -14,7 +29,7 @@
         update_cache: yes
         state: present
     - name: Install Docker-compose
-      ansible.builtin.get_url: 
+      ansible.builtin.get_url:
         url: https://github.com/docker/compose/releases/download/1.27.4/docker-compose-Linux-{{lookup('pipe', 'uname -m')}}
         dest: /usr/local/bin/docker-compose
         mode: +x
@@ -24,37 +39,35 @@
         state: started
     - name: Install docker python module
       ansible.builtin.pip:
-        name: 
+        name:
           - docker
           - docker-compose
-    
 
 - name: Create new linux user
   hosts: all
   become: yes
-  tasks: 
+  tasks:
     - name: Create new linux user
       ansible.builtin.user:
-        name: nana
+        name: ramco
         groups: adm,docker
-
 
 - name: Start docker containers
   hosts: all
   become: yes
-  become_user: nana
+  become_user: ramco
   vars_files:
     - project-vars
   tasks:
     - name: Copy docker compose
       ansible.builtin.copy:
-        src: /Users/nanajanashia/Demo-projects/Bootcamp/Exercises/bootcamp-java-mysql-project/docker-compose-full.yaml
-        dest: /home/nana/docker-compose.yaml
+        src: /Users/ramazanatalay/Documents/Devops/java-mysql/docker-compose-full.yaml
+        dest: /home/ramco/docker-compose.yaml
     - name: Docker login
-      community.docker.docker_login: 
+      community.docker.docker_login:
         registry_url: https://index.docker.io/v1/
-        username: nanajanashia
+        username: ramazanatalay
         password: "{{docker_password}}"
     - name: Start container from compose
-      community.docker.docker_compose: 
-        project_src: /home/nana
+      community.docker.docker_compose:
+        project_src: /home/ramco
