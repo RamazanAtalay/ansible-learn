@@ -7,3 +7,4 @@ keyed_groups:
     prefix: tag
   - key: instance_type
     prefix: instance_type
+# you can use one key and prefix type. If you use two there would be twice result
